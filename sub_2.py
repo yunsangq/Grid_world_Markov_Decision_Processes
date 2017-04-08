@@ -104,12 +104,12 @@ while True:
             for j in range(0, WORLD_SIZE):
                 print('i: {}, j: {}, qval: {}'.format(i, j, qval[i][j]))
         master = Tk()
-        w = Canvas(master, width=800, height=800)
+        w = Canvas(master, width=900, height=900)
         w.pack()
         i_cnt = 0
-        for i in range(50, 550, 150):
+        for i in range(20, 770, 150):
             j_cnt = 0
-            for j in range(50, 550, 150):
+            for j in range(20, 770, 150):
                 w.create_rectangle(j, i, j+150, i+150)
                 w.create_text(j+20, i+10, text=str(round(newWorld[i_cnt][j_cnt], 1)))
                 # ['L', 'U', 'R', 'D']
