@@ -11,72 +11,58 @@ discount = 0.9
 # left, up, right, down
 actions = ['L', 'U', 'R', 'D']
 
-actionProb = []
+qval = []
 for i in range(0, WORLD_SIZE):
-    actionProb.append([])
+    qval.append([])
     for j in range(0, WORLD_SIZE):
-        actionProb[i].append(dict({'L':0.25, 'U':0.25, 'R':0.25, 'D':0.25}))
+        qval[i].append(dict({'L':0.0, 'U':0.0, 'R':0.0, 'D':0.0}))
 
 nextState = []
 actionReward = []
-qval = []
 for i in range(0, WORLD_SIZE):
     nextState.append([])
     actionReward.append([])
-    qval.append([])
     for j in range(0, WORLD_SIZE):
         next = dict()
         reward = dict()
-        q = dict()
         if i == 0:
             next['U'] = [i, j]
             reward['U'] = -1.0
-            q['U'] = 0.0
         else:
             next['U'] = [i - 1, j]
             reward['U'] = 0.0
-            q['U'] = 0.0
 
         if i == WORLD_SIZE - 1:
             next['D'] = [i, j]
             reward['D'] = -1.0
-            q['D'] = 0.0
         else:
             next['D'] = [i + 1, j]
             reward['D'] = 0.0
-            q['D'] = 0.0
 
         if j == 0:
             next['L'] = [i, j]
             reward['L'] = -1.0
-            q['L'] = 0.0
         else:
             next['L'] = [i, j - 1]
             reward['L'] = 0.0
-            q['L'] = 0.0
 
         if j == WORLD_SIZE - 1:
             next['R'] = [i, j]
             reward['R'] = -1.0
-            q['R'] = 0.0
         else:
             next['R'] = [i, j + 1]
             reward['R'] = 0.0
-            q['R'] = 0.0
 
         if [i, j] == A_POS:
             next['L'] = next['R'] = next['D'] = next['U'] = A_PRIME_POS
             reward['L'] = reward['R'] = reward['D'] = reward['U'] = 10.0
-            q['L'] = q['R'] = q['D'] = q['U'] = 0.0
 
         if [i, j] == B_POS:
             next['L'] = next['R'] = next['D'] = next['U'] = B_PRIME_POS
             reward['L'] = reward['R'] = reward['D'] = reward['U'] = 5.0
-            q['L'] = q['R'] = q['D'] = q['U'] = 0.0
 
         nextState[i].append(next)
         actionReward[i].append(reward)
-        qval[i].append(q)
 
 
 def qmax(pos):
@@ -93,7 +79,6 @@ while True:
             values = []
             for action in actions:
                 newPosition = nextState[i][j][action]
-                # value iteration
                 values.append(actionReward[i][j][action] + discount * world[newPosition[0], newPosition[1]])
                 qval[i][j][action] = actionReward[i][j][action] + discount * qmax(newPosition)
             newWorld[i][j] = np.max(values)
