@@ -8,10 +8,16 @@ B_POS = [0, 3]
 B_PRIME_POS = [2, 3]
 discount = 0.9
 
+states = []
+for i in range(0, WORLD_SIZE):
+    for j in range(0, WORLD_SIZE):
+        states.append([i, j])
+
 # left, up, right, down
 actions = ['L', 'U', 'R', 'D']
 
 qval = []
+# policy
 pval = dict({'L':0.033, 'U':0.9, 'R':0.033, 'D':0.033})
 for i in range(0, WORLD_SIZE):
     qval.append([])
@@ -65,6 +71,58 @@ for i in range(0, WORLD_SIZE):
         nextState[i].append(next)
         actionReward[i].append(reward)
 
+
+# sub_3 1)
+def find_states(pos):
+    cnt = 0
+    for i, j in states:
+        if i == pos[0] and j == pos[1]:
+            return cnt
+        cnt += 1
+
+# 25, 100
+Policy = np.zeros((len(states), len(states)*len(actions)))
+# 100, 25
+transition = np.zeros((len(states), len(states)*len(actions)))
+R = np.zeros((len(states)*len(actions), 1))
+state_cnt = 0
+pj_cnt = 0
+for i in range(WORLD_SIZE):
+    for j in range(WORLD_SIZE):
+        action_cnt = 0
+        for action in actions:
+            Policy[state_cnt][pj_cnt] = pval[action]
+
+            newPosition = nextState[i][j][action]
+            state_idx = find_states(newPosition)
+            transition[state_idx][pj_cnt] = 1
+
+            R[pj_cnt] = actionReward[i][j][action]
+            pj_cnt += 1
+
+            action_cnt += 1
+
+        state_cnt += 1
+
+transition = np.transpose(transition)
+
+transition_p = np.dot(Policy, transition)
+reward_p = np.dot(Policy, R)
+
+v = np.dot(np.linalg.inv(np.identity(len(states)) - discount * transition_p), reward_p)
+
+world = np.zeros((WORLD_SIZE, WORLD_SIZE))
+v_cnt = 0
+for i in range(WORLD_SIZE):
+    for j in range(WORLD_SIZE):
+        world[i][j] = v[v_cnt]
+        v_cnt += 1
+
+print('sub3_1)')
+print('Random Policy')
+print(world)
+
+
 # sub_3 2)
 def qmax(pos):
     tmp = []
@@ -94,8 +152,10 @@ while True:
 
             newWorld[i][j] = np.max(values)
     if np.sum(np.abs(world - newWorld)) < 1e-4:
+        print('sub3_2)')
         print('Optimal Policy')
         print(newWorld)
+        print('Action Value')
         for i in range(0, WORLD_SIZE):
             for j in range(0, WORLD_SIZE):
                 print('i: {}, j: {}, qval: {}'.format(i, j, qval[i][j]))
