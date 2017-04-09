@@ -97,13 +97,15 @@ while True:
             for j in range(20, 770, 150):
                 w.create_rectangle(j, i, j+150, i+150)
                 w.create_text(j+20, i+10, text=str(round(newWorld[i_cnt][j_cnt], 1)))
+                w.create_line(j, i, j+150, i+150)
+                w.create_line(j, i + 150, j + 150, i)
                 # ['L', 'U', 'R', 'D']
-                w.create_text(j+25, i+50, text='L:'+str(round(qval[i_cnt][j_cnt]['L'], 1)))
-                w.create_text(j+25, i+63, text='U:'+str(round(qval[i_cnt][j_cnt]['U'], 1)))
-                w.create_text(j+25, i+76, text='R:'+str(round(qval[i_cnt][j_cnt]['R'], 1)))
-                w.create_text(j+25, i+89, text='D:'+str(round(qval[i_cnt][j_cnt]['D'], 1)))
                 x1 = (j+(j+150))/2
                 y1 = (i + (i + 150)) / 2
+                w.create_text(x1 - 50, y1, text=str(round(qval[i_cnt][j_cnt]['L'], 1)))
+                w.create_text(x1, y1 - 40, text=str(round(qval[i_cnt][j_cnt]['U'], 1)))
+                w.create_text(x1 + 50, y1, text=str(round(qval[i_cnt][j_cnt]['R'], 1)))
+                w.create_text(x1, y1 + 40, text=str(round(qval[i_cnt][j_cnt]['D'], 1)))
 
                 if qval[i_cnt][j_cnt]['L'] >= newWorld[i_cnt, j_cnt]:
                     w.create_line(x1, y1, x1 - qval[i_cnt][j_cnt]['L'], y1, arrow=LAST)
