@@ -83,28 +83,30 @@ def find_states(pos):
 # 25, 100
 Policy = np.zeros((len(states), len(states)*len(actions)))
 # 100, 25
-transition = np.zeros((len(states), len(states)*len(actions)))
+transition = np.zeros((len(states)*len(actions), len(states)))
 R = np.zeros((len(states)*len(actions), 1))
 state_cnt = 0
 pj_cnt = 0
 for i in range(WORLD_SIZE):
     for j in range(WORLD_SIZE):
-        action_cnt = 0
         for action in actions:
-            Policy[state_cnt][pj_cnt] = pval[action]
-
-            newPosition = nextState[i][j][action]
-            state_idx = find_states(newPosition)
-            transition[state_idx][pj_cnt] = 1
-
+            Policy[state_cnt][pj_cnt] = 0.25
             R[pj_cnt] = actionReward[i][j][action]
             pj_cnt += 1
-
-            action_cnt += 1
-
         state_cnt += 1
 
-transition = np.transpose(transition)
+state_cnt = 0
+tmp = 0
+for i in range(len(states)*len(actions)):
+    x,y = states[state_cnt]
+    if tmp == 4:
+        tmp = 0
+        state_cnt += 1
+    for action in actions:
+        newPosition = nextState[x][y][action]
+        state_idx = find_states(newPosition)
+        transition[i][state_idx] += pval[action]
+    tmp += 1
 
 transition_p = np.dot(Policy, transition)
 reward_p = np.dot(Policy, R)
@@ -155,6 +157,10 @@ while True:
         print('sub3_2)')
         print('Optimal Policy')
         print(newWorld)
+        print('Optimal Policy')
+        for i in range(WORLD_SIZE):
+            print(", ".join('%.02f' % x for x in newWorld[i]))
+
         print('Action Value')
         for i in range(0, WORLD_SIZE):
             for j in range(0, WORLD_SIZE):

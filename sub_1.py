@@ -79,7 +79,6 @@ state_cnt = 0
 pj_cnt = 0
 for i in range(WORLD_SIZE):
     for j in range(WORLD_SIZE):
-        action_cnt = 0
         for action in actions:
             Policy[state_cnt][pj_cnt] = 0.25
 
@@ -89,9 +88,6 @@ for i in range(WORLD_SIZE):
 
             R[pj_cnt] = actionReward[i][j][action]
             pj_cnt += 1
-
-            action_cnt += 1
-
         state_cnt += 1
 
 transition = np.transpose(transition)
