@@ -18,7 +18,7 @@ actions = ['L', 'U', 'R', 'D']
 
 qval = []
 # policy
-pval = dict({'L':0.033, 'U':0.9, 'R':0.033, 'D':0.033})
+pval = dict({'L':0.9, 'U':0.033, 'R':0.033, 'D':0.033})
 for i in range(0, WORLD_SIZE):
     qval.append([])
     for j in range(0, WORLD_SIZE):
@@ -173,20 +173,20 @@ while True:
                 # ['L', 'U', 'R', 'D']
                 x1 = (j+(j+150))/2
                 y1 = (i + (i + 150)) / 2
+
                 w.create_text(x1 - 50, y1, text=str(round(qval[i_cnt][j_cnt]['L'], 1)))
                 w.create_text(x1, y1 - 40, text=str(round(qval[i_cnt][j_cnt]['U'], 1)))
                 w.create_text(x1 + 50, y1, text=str(round(qval[i_cnt][j_cnt]['R'], 1)))
                 w.create_text(x1, y1 + 40, text=str(round(qval[i_cnt][j_cnt]['D'], 1)))
 
                 if qval[i_cnt][j_cnt]['L'] >= newWorld[i_cnt, j_cnt]:
-                    w.create_line(x1, y1, x1 - qval[i_cnt][j_cnt]['L'], y1, arrow=LAST)
+                    w.create_line(x1, y1, x1 - 30, y1, arrow=LAST)
                 if qval[i_cnt][j_cnt]['U'] >= newWorld[i_cnt, j_cnt]:
-                    w.create_line(x1, y1, x1, y1 - qval[i_cnt][j_cnt]['U'], arrow=LAST)
+                    w.create_line(x1, y1, x1, y1 - 30, arrow=LAST)
                 if qval[i_cnt][j_cnt]['R'] >= newWorld[i_cnt, j_cnt]:
-                    w.create_line(x1, y1, x1 + qval[i_cnt][j_cnt]['R'], y1, arrow=LAST)
+                    w.create_line(x1, y1, x1 + 30, y1, arrow=LAST)
                 if qval[i_cnt][j_cnt]['D'] >= newWorld[i_cnt, j_cnt]:
-                    w.create_line(x1, y1, x1, y1 + qval[i_cnt][j_cnt]['D'], arrow=LAST)
-
+                    w.create_line(x1, y1, x1, y1 + 30, arrow=LAST)
                 j_cnt += 1
             i_cnt += 1
 

@@ -108,13 +108,13 @@ while True:
                 w.create_text(x1, y1 + 40, text=str(round(qval[i_cnt][j_cnt]['D'], 1)))
 
                 if qval[i_cnt][j_cnt]['L'] >= newWorld[i_cnt, j_cnt]:
-                    w.create_line(x1, y1, x1 - qval[i_cnt][j_cnt]['L'], y1, arrow=LAST)
+                    w.create_line(x1, y1, x1 - 30, y1, arrow=LAST)
                 if qval[i_cnt][j_cnt]['U'] >= newWorld[i_cnt, j_cnt]:
-                    w.create_line(x1, y1, x1, y1 - qval[i_cnt][j_cnt]['U'], arrow=LAST)
+                    w.create_line(x1, y1, x1, y1 - 30, arrow=LAST)
                 if qval[i_cnt][j_cnt]['R'] >= newWorld[i_cnt, j_cnt]:
-                    w.create_line(x1, y1, x1 + qval[i_cnt][j_cnt]['R'], y1, arrow=LAST)
+                    w.create_line(x1, y1, x1 + 30, y1, arrow=LAST)
                 if qval[i_cnt][j_cnt]['D'] >= newWorld[i_cnt, j_cnt]:
-                    w.create_line(x1, y1, x1, y1 + qval[i_cnt][j_cnt]['D'], arrow=LAST)
+                    w.create_line(x1, y1, x1, y1 + 30, arrow=LAST)
 
                 j_cnt += 1
             i_cnt += 1
