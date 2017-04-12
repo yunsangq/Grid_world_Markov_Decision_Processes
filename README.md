@@ -1,5 +1,5 @@
-# Grid_world_Markov_Decision_Processes
-Reinforcement Learning Lecture homework(gridworld) using markov decision processes
+# Grid world Markov Decision Process
+Reinforcement Learning Lecture homework(gridworld) using markov decision process
 
 - sub_1.py
 Calculate the value function given random policy using analytic approach
