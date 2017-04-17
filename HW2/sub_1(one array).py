@@ -2,20 +2,22 @@ from __future__ import print_function
 import numpy as np
 from tkinter import *
 import time
+import copy
 
 WORLD_SIZE = 4
 REWARD = -1.0
-ACTION_PROB = []
 
 world = np.zeros((WORLD_SIZE, WORLD_SIZE))
+
 
 # left, up, right, down
 actions = ['L', 'U', 'R', 'D']
 
+action_prob = []
 for i in range(0, WORLD_SIZE):
-    ACTION_PROB.append([])
+    action_prob.append([])
     for j in range(0, WORLD_SIZE):
-        ACTION_PROB[i].append(dict({'L':0.25, 'U':0.25, 'R':0.25, 'D':0.25}))
+        action_prob[i].append(dict({'L':0.25, 'U':0.25, 'R':0.25, 'D':0.25}))
 
 nextState = []
 for i in range(0, WORLD_SIZE):
@@ -64,47 +66,94 @@ def policy_improvement():
 
         for action1 in actions:
             newPosition = nextState[i][j][action1]
-            if max == world[newPosition[0], newPosition[1]]:
+            if np.abs(round(max, 1) - round(world[newPosition[0], newPosition[1]], 1)) == 0:
                 max_cnt += 1.0
 
         for action2 in actions:
             newPosition = nextState[i][j][action2]
-            if max == world[newPosition[0], newPosition[1]]:
-                ACTION_PROB[i][j][action2] = 1.0/max_cnt
+            if np.abs(round(max, 1) - round(world[newPosition[0], newPosition[1]], 1)) == 0:
+                action_prob[i][j][action2] = 1.0/max_cnt
             else:
-                ACTION_PROB[i][j][action2] = 0.0
+                action_prob[i][j][action2] = 0.0
 
 idx = 0
-# for figure 4.1
+save_world = []
+save_action_prob = []
+save_idx = []
 start_time = time.time()
 while True:
-    # keep iteration until convergence
+    new_action_prob = []
+    for i in range(0, WORLD_SIZE):
+        new_action_prob.append([])
+        for j in range(0, WORLD_SIZE):
+            new_action_prob[i].append(dict({'L': 0.0, 'U': 0.0, 'R': 0.0, 'D': 0.0}))
+
+    if idx == 0:
+        newlist = copy.copy(world)
+        save_world.append(newlist)
+        newactionlist = copy.deepcopy(action_prob)
+        save_action_prob.append(newactionlist)
+        save_idx.append(idx)
+
     delta = 0.0
     for i, j in states:
         newval = 0.0
         for action in actions:
             newPosition = nextState[i][j][action]
-            # bellman equation
-            newval += ACTION_PROB[i][j][action] * (REWARD + world[newPosition[0], newPosition[1]])
+            newval += 0.25 * (REWARD + world[newPosition[0], newPosition[1]])
         delta = max(delta, np.abs(newval - world[i][j]))
         world[i][j] = newval
 
     if delta < 1e-4:
         print('Random Policy')
         print(world)
+        newlist = copy.copy(world)
+        save_world.append(newlist)
+        policy_improvement()
+        newactionlist = copy.deepcopy(action_prob)
+        save_action_prob.append(newactionlist)
+        save_idx.append(idx)
         break
+    policy_improvement()
+    idx += 1
+    if idx == 1 or idx == 2 or idx == 3 or idx == 10:
+        newlist = copy.copy(world)
+        save_world.append(newlist)
+        newactionlist = copy.deepcopy(action_prob)
+        save_action_prob.append(newactionlist)
+        save_idx.append(idx)
 
-    #policy_improvement()
-    '''
-    if idx == 0 or idx == 1 or idx == 3 or idx == 10:
-        print(world)
-        master = Tk()
-        w = Canvas(master, width=900, height=900)
-        w.pack()
+
+duration = time.time() - start_time
+print('One array version time: %.3fsec' % duration)
+
+master = Tk()
+w = Canvas(master, width=1500, height=900)
+w.pack()
+
+w.create_text(130, 20, text='One array version time: %.3fsec' % duration)
+
+for k in range(6):
+    if k < 3:
+        w.create_text(20, 120 + (k*230), text='k = ' + str(save_idx[k]))
         i_cnt = 0
-        for i in range(20, 220, 50):
+        # y
+        for i in range(40 + (k*230), 240 + (k*230), 50):
             j_cnt = 0
-            for j in range(20, 220, 50):
+            # x
+            for j in range(40, 240, 50):
+                w.create_rectangle(j, i, j + 50, i + 50)
+                w.create_text(j + 20, i + 10, text=str(round(save_world[k][i_cnt][j_cnt], 1)))
+
+                j_cnt += 1
+            i_cnt += 1
+
+        i_cnt = 0
+        # y
+        for i in range(40 + (k*230), 240 + (k*230), 50):
+            j_cnt = 0
+            # x
+            for j in range(40 + 240, 240 + 240, 50):
                 w.create_rectangle(j, i, j + 50, i + 50)
 
                 if (j_cnt == 0 and i_cnt == 0) or (j_cnt == 3 and i_cnt == 3):
@@ -114,21 +163,55 @@ while True:
                     x1 = (j + (j + 50)) / 2
                     y1 = (i + (i + 50)) / 2
 
-                    if ACTION_PROB[i_cnt][j_cnt]['L'] > 0:
+                    if save_action_prob[k][i_cnt][j_cnt]['L'] > 0:
                         w.create_line(x1, y1, x1 - 20, y1, arrow=LAST)
-                    if ACTION_PROB[i_cnt][j_cnt]['U'] > 0:
+                    if save_action_prob[k][i_cnt][j_cnt]['U'] > 0:
                         w.create_line(x1, y1, x1, y1 - 20, arrow=LAST)
-                    if ACTION_PROB[i_cnt][j_cnt]['R'] > 0:
+                    if save_action_prob[k][i_cnt][j_cnt]['R'] > 0:
                         w.create_line(x1, y1, x1 + 20, y1, arrow=LAST)
-                    if ACTION_PROB[i_cnt][j_cnt]['D'] > 0:
+                    if save_action_prob[k][i_cnt][j_cnt]['D'] > 0:
                         w.create_line(x1, y1, x1, y1 + 20, arrow=LAST)
 
                 j_cnt += 1
             i_cnt += 1
+    else:
+        w.create_text(40 + 240 + 230, 120 + ((k-3) * 230), text='k = ' + str(save_idx[k]))
+        i_cnt = 0
+        # y
+        for i in range(40 + ((k-3) * 230), 240 + ((k-3) * 230), 50):
+            j_cnt = 0
+            # x
+            for j in range(40 + 240 + 260, 240 + 240 + 260, 50):
+                w.create_rectangle(j, i, j + 50, i + 50)
+                w.create_text(j + 20, i + 10, text=str(round(save_world[k][i_cnt][j_cnt], 1)))
 
-        mainloop()
-        w.delete()
-    '''
-    idx += 1
-duration = time.time() - start_time
-print('One array version time: %.3fsec' % duration)
+                j_cnt += 1
+            i_cnt += 1
+
+        i_cnt = 0
+        # y
+        for i in range(40 + ((k - 3) * 230), 240 + ((k - 3) * 230), 50):
+            j_cnt = 0
+            # x
+            for j in range(40 + 240 + 260 + 240, 240 + 240 + 260 + 240, 50):
+                w.create_rectangle(j, i, j + 50, i + 50)
+                if (j_cnt == 0 and i_cnt == 0) or (j_cnt == 3 and i_cnt == 3):
+                    pass
+                else:
+                    # ['L', 'U', 'R', 'D']
+                    x1 = (j + (j + 50)) / 2
+                    y1 = (i + (i + 50)) / 2
+
+                    if save_action_prob[k][i_cnt][j_cnt]['L'] > 0:
+                        w.create_line(x1, y1, x1 - 20, y1, arrow=LAST)
+                    if save_action_prob[k][i_cnt][j_cnt]['U'] > 0:
+                        w.create_line(x1, y1, x1, y1 - 20, arrow=LAST)
+                    if save_action_prob[k][i_cnt][j_cnt]['R'] > 0:
+                        w.create_line(x1, y1, x1 + 20, y1, arrow=LAST)
+                    if save_action_prob[k][i_cnt][j_cnt]['D'] > 0:
+                        w.create_line(x1, y1, x1, y1 + 20, arrow=LAST)
+
+                j_cnt += 1
+            i_cnt += 1
+mainloop()
+w.delete()
