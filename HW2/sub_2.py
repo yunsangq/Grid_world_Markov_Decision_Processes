@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from utils.utils import *
 from math import *
+import copy
 
 # maximum # of cars in each location
 MAX_CARS = 20
@@ -31,18 +32,10 @@ RENTAL_CREDIT = 10
 # cost of moving a car
 MOVE_CAR_COST = 2
 
-# first car free
-FIRST_CAR = True
-
-# free park limit
-FREE_PARK = 10
-
-# extra parking lot
-EXTRA_PARKING_COST = 4
-
 # current policy
 policy = np.zeros((MAX_CARS + 1, MAX_CARS + 1))
-
+save_policy = []
+save_policy.append(copy.deepcopy(policy))
 # current state value
 stateValue = np.zeros((MAX_CARS + 1, MAX_CARS + 1))
 
@@ -64,8 +57,6 @@ for i in range(0, MAX_CARS + 1):
 
 # plot a policy/state value matrix
 figureIndex = 0
-
-
 def prettyPrint(data, labels):
     global figureIndex
     fig = plt.figure(figureIndex)
@@ -86,8 +77,6 @@ POISSON_UP_BOUND = 11
 # Probability for poisson distribution
 # @lam: lambda should be less than 10 for this function
 poissonBackup = dict()
-
-
 def poisson(n, lam):
     global poissonBackup
     key = n * 10 + lam
@@ -105,7 +94,10 @@ def expectedReturn(state, action, stateValue):
     returns = 0.0
 
     # cost for moving cars
-    returns -= MOVE_CAR_COST * abs(action)
+    if state == [0, 1]:
+        returns -= 0 * abs(action)
+    else:
+        returns -= MOVE_CAR_COST * abs(action)
 
     # go through all possible rental requests
     for rentalRequestFirstLoc in range(0, POISSON_UP_BOUND):
@@ -137,6 +129,12 @@ def expectedReturn(state, action, stateValue):
                 returnedCarsSecondLoc = RETURNS_SECOND_LOC
                 numOfCarsFirstLoc = min(numOfCarsFirstLoc + returnedCarsFirstLoc, MAX_CARS)
                 numOfCarsSecondLoc = min(numOfCarsSecondLoc + returnedCarsSecondLoc, MAX_CARS)
+
+                if numOfCarsFirstLoc > 10:
+                    returns -= 4 * (numOfCarsFirstLoc - 10)
+                if numOfCarsSecondLoc > 10:
+                    returns -= 4 * (numOfCarsSecondLoc - 10)
+
                 returns += prob * (reward + DISCOUNT * stateValue[numOfCarsFirstLoc, numOfCarsSecondLoc])
             else:
                 numOfCarsFirstLoc_ = numOfCarsFirstLoc
@@ -183,20 +181,31 @@ while True:
             break
         policy = newPolicy
         improvePolicy = False
+        if policyImprovementInd == 1 or policyImprovementInd == 2 or policyImprovementInd == 3 or policyImprovementInd == 4:
+            save_policy.append(copy.deepcopy(policy))
 
     # start policy evaluation
     for i, j in states:
         newStateValue[i, j] = expectedReturn([i, j], policy[i, j], stateValue)
+
     if np.sum(np.abs(newStateValue - stateValue)) < 1e-4:
         stateValue[:] = newStateValue
         improvePolicy = True
         continue
     stateValue[:] = newStateValue
 
+
+def printMatrix(a):
+    for i in range(MAX_CARS, -1, -1):
+        for j in range(MAX_CARS + 1):
+            print("%2.f" % a[i, j], end='')
+        print()
+    print()
+
+for d in save_policy:
+    printMatrix(d)
+
+
 prettyPrint(policy, ['# of cars in first location', '# of cars in second location', '# of cars to move during night'])
 prettyPrint(stateValue, ['# of cars in first location', '# of cars in second location', 'expected returns'])
 plt.show()
-
-
-
-
